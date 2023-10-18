@@ -1,0 +1,609 @@
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+is_initialized = True
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/Llama-2-7b-hf"
+model=llama2_7b
+template=base_llama
+lr=1e-5
+gas=8
+per_device_train_batch_size=1
+bs=32
+is_initialized=True
+
+
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}-initialization-${is_initialized}
+dataset_version=v2.0
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+
+torchrun --nproc_per_node 4 --master-port 1235 src/train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --model_max_length 2048 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy steps \
+  --eval_steps 25 \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0. \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --fsdp 'full_shard auto_wrap' \
+  --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+  --tf32 True \
+  --report_to wandb \
+  --template $template \
+  --dataset_version $dataset_version \
+  --is_initialized $is_initialized
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/Llama-2-7b-hf"
+model=llama2_7b
+template=w_informativeness_w_response_llama
+lr=1e-5
+gas=8
+per_device_train_batch_size=1
+bs=32
+is_initialized=True
+
+
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}-initialization-${is_initialized}
+dataset_version=v2.0
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+
+torchrun --nproc_per_node 4 --master-port 1235 src/train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --model_max_length 2048 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy steps \
+  --eval_steps 25 \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0. \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --fsdp 'full_shard auto_wrap' \
+  --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+  --tf32 True \
+  --report_to wandb \
+  --template $template \
+  --dataset_version $dataset_version \
+  --is_initialized $is_initialized
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+is_initialized = False
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/Llama-2-7b-hf"
+model=llama2_7b
+template=base_llama
+lr=1e-5
+gas=8
+per_device_train_batch_size=1
+bs=32
+is_initialized=False
+
+
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}-initialization-${is_initialized}
+dataset_version=v2.0
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+
+torchrun --nproc_per_node 4 --master-port 1235 src/train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --model_max_length 4096 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy steps \
+  --eval_steps 25 \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0. \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --fsdp 'full_shard auto_wrap' \
+  --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+  --tf32 True \
+  --report_to wandb \
+  --template $template \
+  --dataset_version $dataset_version \
+  --is_initialized $is_initialized \
+  --gradient_checkpointing
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/Llama-2-7b-hf"
+model=llama2_7b
+template=w_informativeness_w_response_llama
+lr=1e-5
+gas=8
+per_device_train_batch_size=1
+bs=32
+is_initialized=False
+
+
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}-initialization-${is_initialized}
+dataset_version=v2.0
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+
+torchrun --nproc_per_node 4 --master-port 1235 src/train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --model_max_length 4096 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy steps \
+  --eval_steps 25 \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0. \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --fsdp 'full_shard auto_wrap' \
+  --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+  --tf32 True \
+  --report_to wandb \
+  --template $template \
+  --dataset_version $dataset_version \
+  --is_initialized $is_initialized \
+  --gradient_checkpointing
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/Llama-2-7b-hf"
+model=llama2_7b
+template=w_informativeness_w_response_w_longref_llama
+lr=1e-5
+gas=8
+per_device_train_batch_size=1
+bs=32
+is_initialized=False
+
+
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}-initialization-${is_initialized}
+dataset_version=v2.0
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+
+torchrun --nproc_per_node 4 --master-port 1235 src/train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --model_max_length 4096 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy steps \
+  --eval_steps 100 \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0. \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --fsdp 'full_shard auto_wrap' \
+  --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+  --tf32 True \
+  --report_to wandb \
+  --template $template \
+  --dataset_version $dataset_version \
+  --is_initialized $is_initialized \
+  --gradient_checkpointing
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+
+
+
+
+# # T5
+
+# # for fsdp
+# export MODEL_DIR=google/flan-t5-xxl
+# export WANDB_ENTITY=lzy37ld
+# export WANDB_PROJECT=attr-eval
+# export CUDA_VISIBLE_DEVICES=0,1,2,3
+# export CACHE_DIR=/ML-A100/home/xiangyue/models
+
+# # make sure you want to do the deletion
+# # ************************************************************************************
+# export OUTPUT_DIR=tmp/flan-t5-xxl
+# rm -rf $OUTPUT_DIR
+# # ************************************************************************************
+
+# current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+# model=flan-t5-xxl
+# setting=train_evaluator
+# dataset_version=vv1.3
+# export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+# torchrun --nproc_per_node 4 run_train.py \
+#   --model_name_or_path $MODEL_DIR \
+#   --prompt_name plain \
+#   --cache_dir $CACHE_DIR \
+#   --data_path osunlp/AttributionBench \
+#   --num_train_samples -1 \
+#   --bf16 True \
+#   --output_dir $OUTPUT_DIR \
+#   --model_max_length 1024 \
+#   --per_device_train_batch_size 1 \
+#   --per_device_eval_batch_size 1 \
+#   --gradient_accumulation_steps 8 \
+#   --num_train_epochs 2 \
+#   --evaluation_strategy steps \
+#   --eval_steps 100 \
+#   --save_strategy epoch \
+#   --logging_strategy steps \
+#   --logging_steps 1 \
+#   --learning_rate 2e-5 \
+#   --weight_decay 0. \
+#   --warmup_ratio 0.03 \
+#   --lr_scheduler_type cosine \
+#   --fsdp 'full_shard auto_wrap' \
+#   --tf32 True \
+#   --fsdp_transformer_layer_cls_to_wrap 'T5Block' \
+#   --report_to wandb
+
+
+# # for ds
+
+# # ds2
+# export MODEL_DIR=google/flan-t5-xxl
+# export WANDB_ENTITY=lzy37ld
+# export WANDB_PROJECT=attr-eval
+# export CUDA_VISIBLE_DEVICES=0,1,2,3
+# export CACHE_DIR=/ML-A100/home/xiangyue/models
+
+# # make sure you want to do the deletion
+# # ************************************************************************************
+# export OUTPUT_DIR=tmp/flan-t5-xxl_ds2
+# rm -rf $OUTPUT_DIR
+# # ************************************************************************************
+
+# current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+# model=flan-t5-xxl_ds2
+# setting=train_evaluator
+# dataset_version=vv1.3
+# export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+# torchrun --nproc_per_node 4 run_train_seq2seq.py \
+#   --model_name_or_path $MODEL_DIR \
+#   --prompt_name plain \
+#   --cache_dir $CACHE_DIR \
+#   --data_path osunlp/AttributionBench \
+#   --num_train_samples -1 \
+#   --bf16 True \
+#   --output_dir $OUTPUT_DIR \
+#   --model_max_length 1024 \
+#   --per_device_train_batch_size 2 \
+#   --per_device_eval_batch_size 2 \
+#   --gradient_accumulation_steps 8 \
+#   --num_train_epochs 2 \
+#   --evaluation_strategy steps \
+#   --eval_steps 100 \
+#   --save_strategy epoch \
+#   --logging_strategy steps \
+#   --logging_steps 1 \
+#   --learning_rate 2e-5 \
+#   --weight_decay 0. \
+#   --warmup_ratio 0.03 \
+#   --lr_scheduler_type cosine \
+#   --report_to wandb \
+#   --tf32 True \
+#   --deepspeed ds_config/ds_zero2_run.json
+
+
+
+
+
+# # ds3
+
+# export MODEL_DIR=google/flan-t5-xxl
+# export WANDB_ENTITY=lzy37ld
+# export WANDB_PROJECT=attr-eval
+# export CUDA_VISIBLE_DEVICES=0,1,2,3
+# export CACHE_DIR=/ML-A100/home/xiangyue/models
+
+# # make sure you want to do the deletion
+# # ************************************************************************************
+# export OUTPUT_DIR=tmp/flan-t5-xxl_ds3
+# rm -rf $OUTPUT_DIR
+# # ************************************************************************************
+
+# current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+# model=flan-t5-xxl_ds3
+# setting=train_evaluator
+# dataset_version=vv1.3
+# export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+# torchrun --nproc_per_node 4 run_train_seq2seq.py \
+#   --model_name_or_path $MODEL_DIR \
+#   --prompt_name plain \
+#   --cache_dir $CACHE_DIR \
+#   --data_path osunlp/AttributionBench \
+#   --num_train_samples -1 \
+#   --bf16 True \
+#   --output_dir $OUTPUT_DIR \
+#   --model_max_length 1024 \
+#   --per_device_train_batch_size 4 \
+#   --per_device_eval_batch_size 4 \
+#   --gradient_accumulation_steps 8 \
+#   --num_train_epochs 2 \
+#   --evaluation_strategy steps \
+#   --eval_steps 50 \
+#   --save_strategy epoch \
+#   --logging_strategy steps \
+#   --logging_steps 1 \
+#   --learning_rate 2e-5 \
+#   --weight_decay 0. \
+#   --warmup_ratio 0.03 \
+#   --lr_scheduler_type cosine \
+#   --report_to wandb \
+#   --tf32 True \
+#   --deepspeed ds_config/ds_zero3_run.json
+
+
+
+
+
+
+
+
+
+
+
+# # ************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+
+
+
+
+
+
+# # for debug
+
+
+# export MODEL_DIR=gpt2
+# export WANDB_ENTITY=lzy37ld
+# export WANDB_PROJECT=attr-eval
+# export CUDA_VISIBLE_DEVICES=0,1,2,3
+
+# # make sure you want to do the deletion
+# # ************************************************************************************
+# export OUTPUT_DIR=tmp/gpt2
+# rm -rf $OUTPUT_DIR
+# # ************************************************************************************
+
+# current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+# model=gpt2
+# setting=train_evaluator_debug
+# dataset_version=vv1.0
+# export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+# torchrun --nproc_per_node 4 run_train.py \
+#   --model_name_or_path gpt2 \
+#   --prompt_name plain \
+#   --data_path osunlp/AttributionBench \
+#   --num_train_samples -1 \
+#   --output_dir tmp/gpt2 \
+#   --model_max_length 512 \
+#   --per_device_train_batch_size 2 \
+#   --per_device_eval_batch_size 2 \
+#   --gradient_accumulation_steps 2 \
+#   --num_train_epochs 2 \
+#   --evaluation_strategy steps \
+#   --eval_steps 100 \
+#   --save_strategy epoch \
+#   --save_total_limit 1 \
+#   --logging_strategy steps \
+#   --logging_steps 1 \
+#   --learning_rate 2e-5 \
+#   --weight_decay 0. \
+#   --warmup_ratio 0.03 \
+#   --lr_scheduler_type cosine \
+#   --report_to wandb \
+#   --debug_setting
+
+
+
+# torchrun --nproc_per_node 2 run_train.py \
+#   --model_name_or_path gpt2 \
+#   --prompt_name plain \
+#   --data_path osunlp/AttributionBench \
+#   --num_train_samples -1 \
+#   --output_dir tmp/gpt2 \
+#   --model_max_length 512 \
+#   --per_device_train_batch_size 2 \
+#   --per_device_eval_batch_size 2 \
+#   --gradient_accumulation_steps 2 \
+#   --num_train_epochs 2 \
+#   --evaluation_strategy steps \
+#   --eval_steps 100 \
+#   --save_strategy epoch \
+#   --save_total_limit 1 \
+#   --logging_strategy steps \
+#   --logging_steps 1 \
+#   --learning_rate 2e-5 \
+#   --weight_decay 0. \
+#   --warmup_ratio 0.03 \
+#   --lr_scheduler_type cosine \
+#   --report_to wandb \
+#   --debug_setting

@@ -1,0 +1,11 @@
+# Refer to https://github.com/lm-sys/FastChat to know how to deploy FastChat service
+
+module: "src.agents.FastChatAgent"
+parameters:
+    worker_address: http://localhost:21002
+    name: gpt2
+    model_name: gpt2
+    prompt_name: plain
+    max_new_tokens: 128
+    temperature: 0
+    top_p: 0

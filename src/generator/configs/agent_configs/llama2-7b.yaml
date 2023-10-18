@@ -1,0 +1,14 @@
+agent_class: hf
+parameters:
+    name: llama2-7b
+    model_name: meta-llama/Llama-2-7b-hf
+    prompt_name: plain
+
+    batch_size: 32
+
+    # you can modify those generation config below
+    do_sample: True
+    temperature: 1
+    top_p: 0.9
+    max_new_tokens: 64
+    min_new_tokens: 4

@@ -1,0 +1,14 @@
+agent_class: hf
+parameters:
+    name: openchat_v3.2_super
+    model_name: openchat/openchat_v3.2_super
+    prompt_name: openchat_v3.2
+
+    batch_size: 32
+
+    # you can modify those generation config below
+    do_sample: True
+    temperature: 1
+    top_p: 0.9
+    max_new_tokens: 64
+    min_new_tokens: 4

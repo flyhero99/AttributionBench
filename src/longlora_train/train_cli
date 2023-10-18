@@ -1,0 +1,368 @@
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+use the downloaded path here......
+export MODEL_DIR="Yukang/LongAlpaca-7B"
+model=longalpaca_7b
+template=base_longlora
+lr=2e-5
+per_device_train_batch_size=2
+gas=8
+bs=64
+dataset_version=v2.0
+
+
+# bs=$(( ${#NUM_CUDA[@]} * gas * per_device_train_batch_size ))
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
+
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+torchrun --nproc_per_node 4 --master-port 1235 src/longlora_train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --use_flash_attn True \
+  --low_rank_training False \
+  --model_max_length 32768 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy no \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 25 \
+  --learning_rate ${lr} \
+  --weight_decay 0.0     \
+  --warmup_steps 20     \
+  --lr_scheduler_type "constant_with_warmup" \
+  --deepspeed "src/longlora_train/ds_configs/stage2.json" \
+  --tf32 True \
+  --report_to wandb \
+  --model_type llama \
+  --template $template \
+  --dataset_version $dataset_version
+
+
+
+# diff between longlora 
+# --lr_scheduler_type "constant_with_warmup"     \
+# warmup_steps
+# use deepspeed
+
+
+
+# what is the best setting so far??? bs and lr
+
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/LongAlpaca-13B"
+model=longalpaca_13b
+template=base_longlora
+lr=2e-5
+per_device_train_batch_size=8
+gas=8
+bs=256
+dataset_version=v2.0
+
+
+# bs=$(( ${#NUM_CUDA[@]} * gas * per_device_train_batch_size ))
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+torchrun --nproc_per_node 4 --master-port 1235 src/longlora_train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --use_flash_attn True \
+  --low_rank_training False \
+  --model_max_length 32768 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy no \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 6 \
+  --learning_rate ${lr} \
+  --weight_decay 0.0     \
+  --warmup_steps 20     \
+  --lr_scheduler_type "constant_with_warmup" \
+  --deepspeed "src/longlora_train/ds_configs/stage3.json" \
+  --tf32 True \
+  --report_to wandb \
+  --model_type llama \
+  --template $template \
+  --dataset_version $dataset_version
+
+
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/LongAlpaca-13B"
+model=longalpaca_13b
+template=w_informativeness_w_response_longlora
+lr=2e-5
+per_device_train_batch_size=8
+gas=8
+bs=256
+dataset_version=v2.0
+
+
+# bs=$(( ${#NUM_CUDA[@]} * gas * per_device_train_batch_size ))
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+torchrun --nproc_per_node 4 --master-port 1233 src/longlora_train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --use_flash_attn True \
+  --low_rank_training False \
+  --model_max_length 32768 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy no \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 6 \
+  --learning_rate ${lr} \
+  --weight_decay 0.0     \
+  --warmup_steps 20     \
+  --lr_scheduler_type "constant_with_warmup" \
+  --deepspeed "src/longlora_train/ds_configs/stage3.json" \
+  --tf32 True \
+  --report_to wandb \
+  --model_type llama \
+  --template $template \
+  --dataset_version $dataset_version
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+v2.1
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/LongAlpaca-13B"
+model=longalpaca_13b
+template=base_longlora
+lr=2e-5
+per_device_train_batch_size=8
+gas=8
+bs=256
+dataset_version=v2.1
+
+
+# bs=$(( ${#NUM_CUDA[@]} * gas * per_device_train_batch_size ))
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+torchrun --nproc_per_node 4 --master-port 1235 src/longlora_train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --use_flash_attn True \
+  --low_rank_training False \
+  --model_max_length 32768 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy no \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 6 \
+  --learning_rate ${lr} \
+  --weight_decay 0.0     \
+  --warmup_steps 20     \
+  --lr_scheduler_type "constant_with_warmup" \
+  --deepspeed "src/longlora_train/ds_configs/stage3.json" \
+  --tf32 True \
+  --report_to wandb \
+  --model_type llama \
+  --template $template \
+  --dataset_version $dataset_version
+
+
+
+
+
+# ************************************************************************************# ************************************************************************************# ************************************************************************************# ************************************************************************************
+
+
+
+export HTTP_PROXY=http://100.68.173.3:3128
+export HTTPS_PROXY=http://100.68.173.3:3128
+export http_proxy=http://100.68.173.3:3128
+export https_proxy=http://100.68.173.3:3128
+export HF_HOME=/ML-A100/home/xiangyue/models
+export TMPDIR=/ML-A100/home/xiangyue/lzy/tmp
+
+
+export WANDB_ENTITY=lzy37ld
+export WANDB_PROJECT=attr-eval
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# in zsh
+IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
+current_time=$(date +"%Y-%m-%d-%H:%M:%S")
+
+
+# where you might want to change
+export MODEL_DIR="/ML-A100/home/xiangyue/models/LongAlpaca-13B"
+model=longalpaca_13b
+template=w_informativeness_w_response_longlora
+lr=2e-5
+per_device_train_batch_size=8
+gas=8
+bs=256
+dataset_version=v2.1
+
+
+# bs=$(( ${#NUM_CUDA[@]} * gas * per_device_train_batch_size ))
+setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
+
+# make sure you want to do the deletion
+# ************************************************************************************
+export OUTPUT_DIR=checkpoint/${model}-${dataset_version}-${setting}
+rm -rf $OUTPUT_DIR
+# ************************************************************************************
+export WANDB_NAME=${model}_${setting}_dataset_${dataset_version}_${current_time}
+
+torchrun --nproc_per_node 4 --master-port 1233 src/longlora_train/run_train_with_question.py \
+  --model_name_or_path $MODEL_DIR \
+  --data_path /ML-A100/home/xiangyue/lyf/attribution-eval/hf_dataset/AttributionBench_branch_lyf \
+  --bf16 True \
+  --output_dir $OUTPUT_DIR \
+  --use_flash_attn True \
+  --low_rank_training False \
+  --model_max_length 32768 \
+  --per_device_train_batch_size ${per_device_train_batch_size} \
+  --per_device_eval_batch_size 2 \
+  --gradient_accumulation_steps ${gas} \
+  --num_train_epochs 2 \
+  --evaluation_strategy no \
+  --save_strategy epoch \
+  --logging_strategy steps \
+  --logging_steps 6 \
+  --learning_rate ${lr} \
+  --weight_decay 0.0     \
+  --warmup_steps 20     \
+  --lr_scheduler_type "constant_with_warmup" \
+  --deepspeed "src/longlora_train/ds_configs/stage3.json" \
+  --tf32 True \
+  --report_to wandb \
+  --model_type llama \
+  --template $template \
+  --dataset_version $dataset_version
+

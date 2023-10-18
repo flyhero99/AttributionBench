@@ -1,0 +1,14 @@
+agent_class: hf
+parameters:
+    name: tulu-7b
+    model_name: allenai/tulu-7b
+    prompt_name: tulu
+
+    batch_size: 32
+
+    # you can modify those generation config below
+    do_sample: True
+    temperature: 1
+    top_p: 0.9
+    max_new_tokens: 64
+    min_new_tokens: 4

@@ -1,0 +1,14 @@
+agent_class: hf
+parameters:
+    name: vicuna-7b-v1.3
+    model_name: lmsys/vicuna-7b-v1.3
+    prompt_name: vicuna_v1.1
+
+    batch_size: 32
+
+    # you can modify those generation config below
+    do_sample: True
+    temperature: 1
+    top_p: 0.9
+    max_new_tokens: 64
+    min_new_tokens: 4

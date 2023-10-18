@@ -1,0 +1,14 @@
+agent_class: hf
+parameters:
+    name: flan-t5-xxl
+    model_name: google/flan-t5-xxl
+    prompt_name: plain
+
+    batch_size: 32
+
+    # you can modify those generation config below
+    do_sample: True
+    temperature: 1
+    top_p: 0.9
+    max_new_tokens: 64
+    min_new_tokens: 4

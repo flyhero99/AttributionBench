@@ -1,0 +1,8 @@
+agent_class: claude
+parameters:
+    name: claude
+    prompt_name: claude
+    api_args:
+        model: claude
+        # key: <assign your key here>
+        max_tokens_to_sample: 256

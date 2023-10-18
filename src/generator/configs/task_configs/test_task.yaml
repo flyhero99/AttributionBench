@@ -1,0 +1,6 @@
+name: attr_eval
+path: ./datas/attr_eval.json
+keys:
+# The order matters
+  - query
+  - reference
