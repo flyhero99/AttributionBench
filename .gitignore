@@ -3,3 +3,9 @@ data/hf_data/*
 data/our_data/*
 
 data/raw_data/*
+
+checkpoints/*
+
+inference_results/*
+
+zsh_scripts/wandb/*
