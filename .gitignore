@@ -9,3 +9,5 @@ checkpoints/*
 inference_results/*
 
 zsh_scripts/wandb/*
+
+openai_api_key.txt

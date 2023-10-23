@@ -239,7 +239,7 @@ class DatasetLoader():
                             "src_dataset": "Stanford-GenSearch",
                         }
                         data_item_to_add["id"] = "Stanford-GenSearch_" + str(uuid.uuid4())
-                        if True or not self.check_empty_references(data_item_to_add["references"]):
+                        if not self.check_empty_references(data_item_to_add["references"]):
                             data.append(data_item_to_add)
           
         else:

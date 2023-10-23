@@ -21,7 +21,7 @@ import hashlib
 from argparse import ArgumentParser
 import sys
 sys.path.append(".")
-from src.longlora_train.llama_attn_replace import replace_llama_attn
+# from ..longlora_train.llama_attn_replace import replace_llama_attn
 
 
 
@@ -439,11 +439,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.flash_attn:
-        replace_llama_attn(use_flash_attn=True, use_full=True)
+    # if args.flash_attn:
+    #     replace_llama_attn(use_flash_attn=True, use_full=True)
 
-    if "longlora" in args.template:
-        replace_llama_attn(use_flash_attn=True, use_full=True)
+    # if "longlora" in args.template:
+    #     replace_llama_attn(use_flash_attn=True, use_full=True)
 
     with open(args.template_path) as f:
         template = json.load(f)

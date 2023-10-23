@@ -12,7 +12,6 @@ export WANDB_PROJECT=attribution-eval-v2.0
 
 export TMPDIR=/ML-A100/home/xiangyue/lyf/tmp
 export HF_HOME=/ML-A100/home/xiangyue/lyf/.cache/huggingface
-rm -rf $HF_HOME
 
 # in zsh
 IFS=',' read -A NUM_CUDA <<< "$CUDA_VISIBLE_DEVICES"
@@ -24,16 +23,16 @@ current_time=$(date +"%Y-%m-%d-%H:%M:%S")
 
 
 # v2.0 32 1e-5
-data_version=v2.3
+data_version=v2.2
 model=llama2_7b
-# template=w_informativeness_w_response_llama
+# template=w_informativeness_w_response_w_longref_llama
 template=base_llama
 per_device_train_batch_size=1
 gas=8
 lr=1e-5
 bs=32
 setting=template-${template}-bs${bs}-lr${lr}-gas${gas}
-dataset_version=v2.3
+dataset_version=v2.2
 current_time=$(date +"%Y-%m-%d-%H:%M:%S")
 
 # make sure you want to do the deletion
