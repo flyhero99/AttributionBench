@@ -8,3 +8,5 @@ merged_train_sampled.jsonl filter=lfs diff=lfs merge=lfs -text
 test_ood.jsonl filter=lfs diff=lfs merge=lfs -text
 train_overall_balanced.jsonl filter=lfs diff=lfs merge=lfs -text
 dev_all_subset_balanced.jsonl filter=lfs diff=lfs merge=lfs -text
+test_ood_all_subset_balanced.jsonl filter=lfs diff=lfs merge=lfs -text
+test_ood_balanced.jsonl filter=lfs diff=lfs merge=lfs -text
