@@ -10,7 +10,7 @@ configs:
       - split: test
         path: "test_all_subset_balanced.jsonl"
       - split: test_ood
-        path: "test_ood.jsonl"
+        path: "test_ood_all_subset_balanced.jsonl"
   - config_name: v1.1
     description: "Version 1.1 of the dataset: (1) added id; (2) removed items with empty reference; (3) overall label balanced"
     data_files:
@@ -21,7 +21,7 @@ configs:
       - split: test
         path: "test_all_subset_balanced.jsonl"
       - split: test_ood
-        path: "test_ood.jsonl"
+        path: "test_ood_all_subset_balanced.jsonl"
   - config_name: v1.2
     description: "Version 1.2 of the dataset: (1) added id; (2) removed items with empty reference; (3) all data included"
     data_files:
@@ -32,7 +32,7 @@ configs:
       - split: test
         path: "test_all_subset_balanced.jsonl"
       - split: test_ood
-        path: "test_ood.jsonl"
+        path: "test_ood_all_subset_balanced.jsonl"
   - config_name: v1.3
     description: "Version 1.3 of the dataset: (1) added id; (2) removed items with empty reference; (3) all data included"
     data_files:
@@ -43,7 +43,7 @@ configs:
       - split: test
         path: "test_all_subset_balanced.jsonl"
       - split: test_ood
-        path: "test_ood.jsonl"
+        path: "test_ood_all_subset_balanced.jsonl"
 
 # description: |
 #   Your general dataset description goes here.
