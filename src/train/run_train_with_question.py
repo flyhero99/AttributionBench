@@ -22,7 +22,8 @@ import transformers
 from torch.utils.data import Dataset
 from transformers import Trainer,set_seed
 import json
-from datasets import load_dataset
+from datasets import load_dataset, Features, Value
+import datasets
 from multiprocessing import cpu_count
 import random
 import wandb
@@ -30,7 +31,7 @@ import os
 import numpy as np
 from transformers import TrainerCallback, TrainerState, TrainerControl
 from sklearn.metrics import precision_score, recall_score, f1_score
-
+import pdb
 
 random.seed(42)
 
@@ -58,9 +59,9 @@ class DataArguments:
     )
     debug_setting: bool = field(default= False)
     contained_datasets: str = field(default='all', metadata={"help": "Contained datasets (e.g., ExpertQA, hagrid, etc. 'all' for containing all datasets.)"})
-    dataset_version: str = field(default='v2.0', metadata={"help": "Contained datasets (e.g., ExpertQA, hagrid, etc. 'all' for containing all datasets.)"})
-    template: str = field(default='base_llama')
-    template_path: str = field(default = 'src/template.json')
+    dataset_version: str = field(default='v3.0', metadata={"help": "Contained datasets (e.g., ExpertQA, hagrid, etc. 'all' for containing all datasets.)"})
+    template: str = field(default='base_c_e')
+    template_path: str = field(default = 'src/train/template.json')
     def __post_init__(self):
         if self.generator_or_evaluator not in ["evaluator","generator"]:
             raise Exception("Should be either generator or evaluator")
@@ -105,9 +106,6 @@ class SupervisedDataset(Dataset):
         self.tokenizer = tokenizer
         self.dataset_path = data_args.data_path
         # self.subset_name = data_args.train_subset if 'train' in split else data_args.test_subset
-        self.input_template = INPUT_TEMPLATE
-        self.prompt_template = PROMPT_TEMPLATE
-        self.instruction = INSTRUCTION
 
         self.num_train_samples = data_args.num_train_samples
         self.generator_or_evaluator = data_args.generator_or_evaluator
@@ -135,46 +133,78 @@ class SupervisedDataset(Dataset):
         )
 
     def process_function(self, example):
+        
+        def format_prompt(example, have_question=False, have_response=False, prompt_name=self.data_args.template):
+            query = example['question'] if example['question'] and example['question'] not in ["nan", "", None] else ""
+            answer = example['claim'] if example['claim'] and example['claim'] not in ["nan", "", None] else ""
+            response = example['response'] if example['response'] and example['response'] not in ["nan", "", None] else ""
+            documents_concatenation = "\n\n\n".join(example["references"])
 
+            if have_question and have_response:
+                input_template = "### Input:\nQuestion: {}\n\nClaim: {}\n\nResponse: {}\n\nReference: {}\n\n### Output:"
+                input = input_template.format(query, answer, response, documents_concatenation)
+            elif have_question and not have_response:
+                input_template = "### Input:\nQuestion: {}\n\nClaim: {}\n\nReference: {}\n\n### Output:"
+                input = input_template.format(query, answer, documents_concatenation)
+            elif not have_question and have_response:
+                input_template = "### Input:\nClaim: {}\n\nResponse: {}\n\nReference: {}\n\n### Output:"
+                input = input_template.format(answer, response, documents_concatenation)
+            else:
+                input_template = "### Input:\nClaim: {}\n\nReference: {}\n\n### Output:"
+                input = input_template.format(answer, documents_concatenation)
+            
+            instructions = json.load(open(self.data_args.template_path))
+            formatted_prompt = "{}{}".format(instructions[prompt_name]["llama2"], input)
+
+            return formatted_prompt
 
         if self.generator_or_evaluator == "evaluator":
-            question = example['question'] if example['question'] and example['question'] not in ["nan",""] else ""
-            claim = example['claim'] if example['claim'] and example['claim'] not in ["nan",""] else ""
-            response = example['response'] if example['response'] and example['response'] not in ["nan",""] else ""
-
-            if "w_longref" in self.data_args.template and len(example["webpage_references"])!= 0:
-                documents_concatenation = "\n\n\n".join(example["webpage_references"])
+            if "q_c_e_r" in self.data_args.template:
+                have_question = True
+                have_response = True
+            elif "q_c_e" in self.data_args.template:
+                have_question = True
+                have_response = False
+            elif "c_e_r" in self.data_args.template:
+                have_question = False
+                have_response = True
             else:
-                documents_concatenation = "\n\n\n".join(example["references"])
+                have_question = False
+                have_response = False
 
-            if "base" in self.data_args.template:
-                input = self.input_template.format(question, claim, documents_concatenation)
-            elif "w_response" in self.data_args.template:
-                input = self.input_template.format(question, claim, response, documents_concatenation)
-            input += "\n"
-            source = self.prompt_template.format(instruction = self.instruction,input = input)
-
+            source = format_prompt(example, have_question=have_question, have_response=have_response, prompt_name=self.data_args.template)
             target = f"{example['attribution_label']} {self.tokenizer.eos_token}"
             target_tokenized = self._tokenize_fn(target)
             len_target_tokenized = target_tokenized["input_ids_lens"] - 1
-            source_tokenized = self._tokenize_fn(source, minus_len = len_target_tokenized)
+            source_tokenized = self._tokenize_fn(source, minus_len=len_target_tokenized)
 
             # source + target
             input_ids = torch.cat((source_tokenized["input_ids"], target_tokenized["input_ids"][-len_target_tokenized:]), dim=0)
             label = copy.deepcopy(input_ids)
             label[:-len_target_tokenized] = IGNORE_INDEX
-
+        
             return {"input_ids": input_ids, "labels": label}
             
 
     def load_and_tokenize_dataset(self, split, data_args):
+        features = Features({
+            'question': Value('string'),  # 字符串字段
+            'claim': Value('string'),  # 字符串字段
+            'claim_raw_string': Value('string'),  # 字符串字段
+            'response': Value('string'),  # 字符串字段
+            'references': datasets.Sequence(Value("string")),  # 字符串字段
+            'citation_links': datasets.Sequence(Value("string")),  # 字符串字段
+            'webpage_references': datasets.Sequence(Value("string")),  # 字符串字段
+            'attribution_label': Value('string'),  # 字符串字段
+            'src_dataset': Value('string'),  # 字符串字段
+            'id': Value('string'),  # 字符串字段
+        })
         # Load the dataset
         if split in ["stanford_dev", "attributedqa_dev", "hagrid_dev", "expertqa_dev"]:
-            dataset = load_dataset(self.dataset_path, revision="lyf", name=data_args.dataset_version, split="dev")
+            dataset = load_dataset(self.dataset_path, name=data_args.dataset_version, split="dev", features=features)
         else:
-            dataset = load_dataset(self.dataset_path, revision="lyf", name=data_args.dataset_version, split=split)
+            dataset = load_dataset(self.dataset_path, name=data_args.dataset_version, split=split, features=features)
         # add data filter here (subset / delete some field / etc)
-
         if "train" in split:
             # if train set only contains 1 single dataset, then filter the others out from train split
             if data_args.contained_datasets in ['attributedqa_only', 'expertqa_only', 'stanford_only', 'hagrid_only']:
@@ -262,20 +292,17 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer, dat
     )
 
 def train():
+    # pdb.set_trace()
     transformers.logging.set_verbosity_info()
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
+    # pdb.set_trace()
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     print(model_args)
     print(data_args)
     print(training_args)
+    # pdb.set_trace()
     with open(data_args.template_path) as f:
         template = json.load(f)
-    global INSTRUCTION 
-    INSTRUCTION = template[data_args.template]["INSTRUCTION"]
-    global PROMPT_TEMPLATE
-    PROMPT_TEMPLATE = template[data_args.template]["PROMPT_TEMPLATE"]
-    global INPUT_TEMPLATE
-    INPUT_TEMPLATE = template[data_args.template]["INPUT_TEMPLATE"]
     global debug_setting
     global seed
     global prompter
@@ -425,6 +452,16 @@ def train():
     trainer.train(ignore_keys_for_eval = ["past_key_values"])
     trainer.save_state()
     trainer.save_model(output_dir=training_args.output_dir)
+    if torch.distributed.is_initialized():
+        # 仅在主进程上保存模型
+        if torch.distributed.get_rank() == 0:
+            trainer.model.config.save_pretrained(training_args.output_dir)
+            tokenizer.save_pretrained(training_args.output_dir)
+            trainer.model.save_pretrained(training_args.output_dir)
+    else:
+        trainer.model.config.save_pretrained(training_args.output_dir)
+        tokenizer.save_pretrained(training_args.output_dir)
+        trainer.model.save_pretrained(training_args.output_dir)
 
 
 if __name__ == "__main__":

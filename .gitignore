@@ -1,13 +1,11 @@
-data/hf_data/*
+data/
 
-data/our_data/*
-
-data/raw_data/*
+data_1216/
 
 checkpoints/*
 
 inference_results/*
 
-zsh_scripts/wandb/*
+inference_results_old_data/*
 
-openai_api_key.txt
+zsh_scripts/wandb/*

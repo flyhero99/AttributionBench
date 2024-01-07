@@ -241,6 +241,11 @@ class DatasetLoader():
                         data_item_to_add["id"] = "Stanford-GenSearch_" + str(uuid.uuid4())
                         if not self.check_empty_references(data_item_to_add["references"]):
                             data.append(data_item_to_add)
+        elif dataset_name.lower() == "LFQA".lower():
+            for fn in ["annotations-alpaca_wdoc", "annotations-alpaca", "annotations-gpt3_wdoc",
+                       "annotations-gpt3_whudoc", "annotations-gpt3", "annotations-webgpt"]:
+                df = [d for d in json.loads(open("/ML-A100/home/xiangyue/lyf/AttributionBench/data/raw_data/LFQA-Verification/data/annotations/{}.json".format(fn)))]
+                
           
         else:
             print(f"Dataset {dataset_name} not supported or not downloaded yet.")

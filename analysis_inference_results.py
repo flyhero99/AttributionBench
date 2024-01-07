@@ -9,8 +9,8 @@ from functools import partial
 
 
 
-def _parse_prediction(label,method = "attrbench",relax = False, w_rationale = False):
-    label = label.lower().strip()
+def _parse_prediction(label, method="attrbench", relax=False, w_rationale=False):
+    label = str(label).lower().strip()
 
     if not relax and not w_rationale:
 
@@ -31,7 +31,7 @@ def _parse_prediction(label,method = "attrbench",relax = False, w_rationale = Fa
         if method == "attrscore":
             if label == "Attributable".lower():
                 return 1
-            elif label in ["Contradictory".lower(),"Extrapolatory".lower()]:
+            elif label in ["Contradictory".lower(), "Extrapolatory".lower()]:
                 return 0
             else:
                 return -1
@@ -42,6 +42,13 @@ def _parse_prediction(label,method = "attrbench",relax = False, w_rationale = Fa
             if "attributable" in label.lower() and not "not attributable" in label.lower():
                 return 1
             elif "not attributable" in label.lower():
+                return 0
+            else:
+                return -1
+        if method == "autoais":
+            if label == "1":
+                return 1
+            elif label == "0":
                 return 0
             else:
                 return -1
@@ -77,7 +84,7 @@ def _parse_prediction(label,method = "attrbench",relax = False, w_rationale = Fa
 
 
 
-def cal_acc(preds,labels):
+def cal_acc(preds, labels):
     results = []
     for i in range(len(preds)):
         if preds[i] == labels[i] and preds[i] != -1:
@@ -88,21 +95,19 @@ def cal_acc(preds,labels):
 
 
 def main(args):
-
-    d = ddict( lambda : ddict (list))
+    d = ddict(lambda: ddict(list))
     all_labels = []
     all_preds = []
     all_labels_neg = []
     all_preds_neg = []
     all_labels_pos = []
     all_preds_pos = []
-    parse_func = partial(_parse_prediction, relax = args.relax, w_rationale = args.w_rationale)
+    parse_func = partial(_parse_prediction, method=args.method, relax=args.relax, w_rationale=args.w_rationale)
     with jsonlines.open(args.data_path) as f:
         for line in f:
             if line["src_dataset"].startswith("hagrid"):
                 line["src_dataset"] = "hagrid"
             parsed_prediction = parse_func(line["raw_output"])
-
 
             # aovid some ill-defined problem...
             if parsed_prediction == -1:
@@ -121,14 +126,14 @@ def main(args):
                 all_preds_pos.append(parsed_prediction)
                 d[line["src_dataset"]]["labels_pos"].append(line["postprocess_label"])
                 d[line["src_dataset"]]["preds_pos"].append(parsed_prediction)
-
+    # import pdb
+    # pdb.set_trace()
 
     for key in d:
         d[key]["acc"] = cal_acc(d[key]["labels"],d[key]["preds"])
         d[key]["f1"] = f1_score(d[key]["labels"],d[key]["preds"],average="macro")
         d[key]["precision"] = precision_score(d[key]["labels"],d[key]["preds"],average="macro")
         d[key]["recall"] = recall_score(d[key]["labels"],d[key]["preds"],average="macro")
-
 
         y_true_filtered = [y for y, pred in zip(d[key]["labels"], d[key]["preds"]) if pred != -1]
         y_pred_filtered = [pred for pred in d[key]["preds"] if pred != -1]
@@ -148,8 +153,6 @@ def main(args):
     d["all"]["f1"] = f1_score(all_labels,all_preds,average="macro")
     d["all"]["precision"] = precision_score(all_labels,all_preds,average="macro")
     d["all"]["recall"] = recall_score(all_labels,all_preds,average="macro")
-    
-
 
     y_true_all_filtered = [y for y, pred in zip(all_labels, all_preds) if pred != -1]
     y_pred_all_filtered = [pred for pred in all_preds if pred != -1]
@@ -164,29 +167,34 @@ def main(args):
     d["all"]["pos_recall"] = recall_score(y_true_all_filtered,y_pred_all_filtered,pos_label = 1)
     d["all"]["pos_f1"] = f1_score(y_true_all_filtered,y_pred_all_filtered,pos_label = 1)
 
-
-
-
-
-
-
     file_name, file_extension = os.path.splitext(args.data_path)
     data_path = f"{file_name}_analysis{file_extension}"
     with open(data_path,"w") as f:
         for key in d:
-
-            # json.dump({"src_dataset":key,"f1":round(100*d[key]["f1"],1),"acc":round(100*d[key]["acc"],1),"precision":round(100*d[key]["precision"],1),"recall":round(100*d[key]["recall"],1)},f)
-            # f.write("\n")
-
-            json.dump({"src_dataset":key,"f1":round(100*d[key]["f1"],1),"acc":round(100*d[key]["acc"],1),"precision":round(100*d[key]["precision"],1),"recall":round(100*d[key]["recall"],1),\
-            "neg_acc":round(100*d[key]["neg_acc"],1),"neg_precision":round(100*d[key]["neg_precision"],1),"neg_recall":round(100*d[key]["neg_recall"],1),"neg_f1":round(100*d[key]["neg_f1"],1),\
-            "pos_acc":round(100*d[key]["pos_acc"],1),"pos_precision":round(100*d[key]["pos_precision"],1),"pos_recall":round(100*d[key]["pos_recall"],1),"pos_f1":round(100*d[key]["pos_f1"],1)},f)
+            json.dump({
+                "src_dataset": key,
+                "f1": round(100*d[key]["f1"], 1),
+                "acc": round(100*d[key]["acc"], 1),
+                "precision": round(100*d[key]["precision"], 1),
+                "recall": round(100*d[key]["recall"], 1),
+                "neg_acc": round(100*d[key]["neg_acc"], 1),
+                "neg_precision": round(100*d[key]["neg_precision"], 1),
+                "neg_recall": round(100*d[key]["neg_recall"], 1),
+                "neg_f1": round(100*d[key]["neg_f1"], 1),
+                "pos_acc": round(100*d[key]["pos_acc"], 1),
+                "pos_precision": round(100*d[key]["pos_precision"], 1),
+                "pos_recall": round(100*d[key]["pos_recall"], 1),
+                "pos_f1": round(100*d[key]["pos_f1"], 1)},
+                f,
+            )
             f.write("\n")
     
+
 if __name__ == "__main__":
     parser = ArgumentParser("analysis")
     parser.add_argument("--data_path",default="",type=str)
-    parser.add_argument("--relax", action = "store_true")
-    parser.add_argument("--w_rationale", action = "store_true")
+    parser.add_argument("--relax", action="store_true")
+    parser.add_argument("--w_rationale", action="store_true")
+    parser.add_argument("--method", choices=["autoais", "attrscore", "attrbench", "gpt4"])
     args = parser.parse_args()
     main(args)
